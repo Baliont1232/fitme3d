@@ -191,3 +191,4 @@
 
 .privacy { display: flex; align-items: center; gap: var(--space-2); font: var(--font-small); color: var(--color-text-muted); margin-top: var(--space-4); } /* lakat ikon + adatvédelmi szöveg */
 .panel-block { margin-bottom: var(--space-4); }       /* panel szakasz térköze */
+.stage__loading { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); padding: var(--space-2) var(--space-3); border-radius: var(--radius-full); background: var(--color-bg); box-shadow: var(--shadow-card); font: var(--font-small); color: var(--color-text-muted); } /* "Avatar betöltése…" felirat a vászon közepén */

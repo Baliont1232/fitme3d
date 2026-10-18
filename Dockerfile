@@ -24,8 +24,8 @@ RUN cd frontend && npm run build
 # --- 2. lépés: PHP + Apache szerver ------------------------------------
 # hivatalos PHP 8.3 kép beépített Apache-csal
 FROM php:8.3-apache
-# MySQL PDO meghajtó telepítése és az URL-átíró modul bekapcsolása
-RUN docker-php-ext-install pdo_mysql && a2enmod rewrite
+# MySQL PDO meghajtó telepítése, az URL-átíró és a tömörítő (deflate) modul bekapcsolása
+RUN docker-php-ext-install pdo_mysql && a2enmod rewrite deflate
 # Apache beállítás: SPA útvonalak, /api a PHP-hoz
 COPY docker/apache.conf /etc/apache2/sites-available/000-default.conf
 # a lefordított frontend a webszerver gyökerébe

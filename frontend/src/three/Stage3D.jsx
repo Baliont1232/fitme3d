@@ -9,9 +9,8 @@ import { Canvas } from '@react-three/fiber';    // a 3D vászon React komponense
 import { ContactShadows } from '@react-three/drei'; // puha árnyék a talp alatt
 import * as THREE from 'three';                 // Three.js
 import { Minus, Plus, RotateCcw, Layers } from 'lucide-react'; // ikonok
-import { buildBodyModel } from './bodyModel.js'; // a test kiszámítása a méretekből
-import { buildGarmentParts, torsoCircumferenceFn, LAYER_ORDER } from './garments.js'; // ruha geometria
-import { thresholdsFor } from '../fit/fitCalc.js'; // melyik régiót méri a ruha
+import { useHuman } from './useHuman.js';      // a valódi emberi avatar (MakeHuman) a méretekből
+import { buildGarment, LAYER_ORDER } from './garments.js'; // ruhák a test felületéből
 import { sceneConfig, prefersReducedMotion, hasWebGL } from './sceneConfig.js'; // jelenet beállítások
 import AvatarBody from './AvatarBody.jsx';      // az avatar teste
 import GarmentMesh from './GarmentMesh.jsx';    // egy ruhadarab
@@ -22,7 +21,7 @@ const HINT_KEY = 'fitme3d_forgatas_sugo';       // ezzel a kulccsal jegyezzük m
 /**
  * A jelenet tartalma (a vásznon belül): fények, árnyék, avatar, ruhák, kamera.
  */
-function Scene({ body, dressed, fitMap, faded, config, rigRef, autoRotate, interactive }) { // props
+function Scene({ human, height, dressed, fitMap, faded, config, rigRef, autoRotate, interactive }) { // props
   return ( // a jelenet elemei
     <>
       {/* háttérszín: semleges szürke a színhű ruhamegjelenítéshez */}
@@ -33,26 +32,23 @@ function Scene({ body, dressed, fitMap, faded, config, rigRef, autoRotate, inter
       <directionalLight position={config.keyLight.position} intensity={config.keyLight.intensity} />
       {/* gyenge derítőfény hátulról */}
       <directionalLight position={config.fillLight.position} intensity={config.fillLight.intensity} />
-      {/* az avatar teste (térképnél halványabb) */}
-      <AvatarBody body={body} color={config.avatarColor} roughness={config.avatarRoughness} faded={faded || fitMap} />
+      {/* az avatar teste (térképnél halványabb); amíg töltődik, nincs test */}
+      {human && <AvatarBody human={human} color={config.avatarColor} roughness={config.avatarRoughness} faded={faded || fitMap} />}
       {/* a ruhák a rétegsorrendben */}
       {dressed.map((g) => (
         <GarmentMesh // egy ruha a jelenetben
           key={g.type} // típusonként egy háló; méretváltáskor ugyanaz marad, így animálható
-          body={body} // testmodell
-          parts={g.parts} // a ruha részei
-          regions={g.regions} // a ruha által mért régiók
+          garment={g.garment} // a ruha formája (pontok, háromszögek, térkép súlyok)
           color={g.color} // a választott szín
           evaluation={g.evaluation} // a méret kiértékelése (a térkép színeihez)
           fitMap={fitMap} // térkép be/ki
           config={config} // beállítások
-          buckle={g.buckle} // öv csat (csak övnél)
         />
       ))}
       {/* puha kontaktárnyék a talp alatt */}
       <ContactShadows position={[0, 0.001, 0]} opacity={config.shadow.opacity} scale={config.shadow.scale} blur={config.shadow.blur} far={config.shadow.far} resolution={512} />
       {/* kamera és forgatás */}
-      <CameraRig ref={rigRef} height={body.H} config={config} autoRotate={autoRotate} enabled={interactive} />
+      <CameraRig ref={rigRef} height={height} config={config} autoRotate={autoRotate} enabled={interactive} />
     </>
   );                                            // return vége
 }                                               // komponens vége
@@ -80,25 +76,24 @@ export default function Stage3D({                // props
   const [webgl] = useState(() => hasWebGL());   // tud-e a böngésző 3D-t
   const [showHint, setShowHint] = useState(false); // látszik-e a "Húzd a forgatáshoz" súgó
 
-  const profileKey = profile ? [profile.gender, profile.height_cm, profile.weight_kg, profile.chest_cm, profile.waist_cm, profile.hip_cm].join('|') : ''; // a profil "ujjlenyomata"
-  const body = useMemo(() => buildBodyModel(profile), [profileKey]); // eslint-disable-line react-hooks/exhaustive-deps -- csak valódi változáskor számol újra
+  const { human, loading } = useHuman(profile); // a valódi avatar (amíg töltődik: null)
+  const height = Number(profile?.height_cm ?? 175) / 100; // a magasság a kamerához (már töltés közben is tudjuk)
 
   const shapeKey = garments.map((g) => `${g.type}:${JSON.stringify(g.chartRow)}`).join('|'); // a ruhák formáját meghatározó adatok
   const dressedShapes = useMemo(() => {         // a ruhák geometriája (szín- és térképváltáskor NEM számol újra)
+    if (!human) return [];                      // amíg nincs avatar, nincs ruha
     const sorted = [...garments].sort((a, b) => (LAYER_ORDER[a.type] ?? 0) - (LAYER_ORDER[b.type] ?? 0)); // belső rétegek előre
-    const unders = [];                          // az eddig felvett rétegek kerület-függvényei
-    return sorted.map((g) => {                  // minden ruhára
-      const under = (y) => Math.max(0, ...unders.map((f) => f(y))); // az alatta lévő rétegek legnagyobb kerülete
-      const parts = buildGarmentParts(body, g.type, g.chartRow, under); // a ruha részei
-      unders.push(torsoCircumferenceFn(parts)); // a következő réteg ehhez igazodik
-      let buckle = null;                        // öv csat
-      if (g.type === 'ov' && parts[0]) {        // ha öv
-        const mid = parts[0].rings[Math.floor(parts[0].rings.length / 2)]; // a szalag középső gyűrűje
-        buckle = { position: [0, mid.s, (mid.cz ?? 0) + mid.bF + 0.004] }; // a csat a has előtt
-      }                                         // if vége
-      return { type: g.type, parts, regions: Object.keys(thresholdsFor(g.type)), buckle }; // a ruha formája
-    });                                         // map vége
-  }, [body, shapeKey]);                         // eslint-disable-line react-hooks/exhaustive-deps
+    let under = null;                           // az eddig felvett rétegek eltolása pontonként
+    const out = [];                             // az eredmény
+    for (const g of sorted) {                   // minden ruhára
+      const garment = buildGarment(human, g.type, g.chartRow, under); // a ruha a test felületéből
+      if (!garment) continue;                   // ha nem sikerült (pl. nincs méret), kihagyjuk
+      out.push({ type: g.type, garment });      // eltároljuk
+      if (!under) under = new Float32Array(human.nBody); // az első réteg után létrehozzuk
+      for (let i = 0; i < under.length; i++) under[i] = Math.max(under[i], garment.offsets[i]); // a következő réteg ezek fölé kerül
+    }                                           // for vége
+    return out;                                 // a ruhák formája
+  }, [human, shapeKey]);                        // eslint-disable-line react-hooks/exhaustive-deps
   const dressed = dressedShapes.map((d) => {    // a formához hozzátesszük a színt és a kiértékelést
     const g = garments.find((x) => x.type === d.type); // az eredeti ruha adatai
     return { ...d, color: g?.color ?? '#999999', evaluation: g?.evaluation ?? null }; // szín és kiértékelés
@@ -148,7 +143,7 @@ export default function Stage3D({                // props
         gl={{ antialias: true, toneMapping: THREE.ACESFilmicToneMapping, toneMappingExposure: config.exposure, outputColorSpace: THREE.SRGBColorSpace, preserveDrawingBuffer: true }} // ACES tónusleképezés, sRGB kimenet
       >{/* a nyitó címke vége */}
         <Suspense fallback={null}>{/* amíg valami töltődik, nem rajzol semmit */}
-          <Scene body={body} dressed={dressed} fitMap={fitMap} faded={faded} config={config} rigRef={rigRef} autoRotate={autoRotate && !prefersReducedMotion()} interactive={interactive} />{/* a jelenet tartalma */}
+          <Scene human={human} height={height} dressed={dressed} fitMap={fitMap} faded={faded} config={config} rigRef={rigRef} autoRotate={autoRotate && !prefersReducedMotion()} interactive={interactive} />{/* a jelenet tartalma */}
         </Suspense>
       </Canvas>
 
@@ -173,6 +168,8 @@ export default function Stage3D({                // props
           </div>
         </>
       )}
+      {/* az avatar adatcsomag töltése közben */}
+      {loading && <div className="stage__loading" role="status">Avatar betöltése…</div>}
       {/* első látogatáskor 3 mp-ig látható súgó */}
       {showHint && <div className="stage__hint" aria-hidden="true">Húzd a forgatáshoz</div>}
       {/* extra rátét (pl. jelmagyarázat, "nincs avatar" kártya) */}

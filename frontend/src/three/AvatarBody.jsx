@@ -1,58 +1,42 @@
 // =====================================================================
-// AvatarBody.jsx – az avatar teste a jelenetben (törzs, lábak, karok,
-// fej, kezek, lábfejek). Minden testméret-változásnál azonnal újraépül.
+// AvatarBody.jsx – az avatar teste a jelenetben (MakeHuman alapmodell)
+// A háromszögek sosem változnak, ezért egyetlen geometriát tartunk meg,
+// és méretváltáskor csak a pontok helyét írjuk felül (gyors, nincs villanás).
 // =====================================================================
 
-import { useEffect, useMemo } from 'react';     // React horgok: memorizálás és mellékhatás
+import { useEffect, useMemo } from 'react';     // React horgok
 import * as THREE from 'three';                 // Three.js
-import { buildRingGeometry } from './loft.js';  // gyűrűkből geometria
 
 /**
- * Egy ellipszoid (nyújtott gömb) a fejhez, kezekhez, lábfejekhez.
+ * A test. 'human' a buildHuman eredménye, 'faded' = 10%-kal halványabb (térkép bekapcsolva).
  */
-function Ellipsoid({ center, radii, rotZ = 0, material }) { // középpont, sugarak, elforgatás, anyag
-  // JSX: a Three.js objektumok React komponensként. FIGYELEM: a 3D fában nem lehet szóköz a
-  // címkék között egy sorban, ezért a megjegyzések mindig külön sorban állnak.
-  return (
-    // háló a megadott helyen, elforgatva és nyújtva
-    <mesh position={center} rotation={[0, 0, rotZ]} scale={radii} material={material}>
-      {/* egységgömb 32×20 szegmensből, a scale nyújtja ellipszoiddá */}
-      <sphereGeometry args={[1, 32, 20]} />
-    </mesh>
-  );                                            // return vége
-}                                               // komponens vége
-
-/**
- * A teljes test. 'body' a buildBodyModel eredménye, 'faded' = halványabb (térkép bekapcsolva).
- */
-export default function AvatarBody({ body, color, roughness = 0.9, faded = false }) { // props
-  const material = useMemo(() => new THREE.MeshStandardMaterial({ roughness }), [roughness]); // egyetlen közös, matt anyag
-  useEffect(() => {                             // a szín beállítása, ha változik
+export default function AvatarBody({ human, color, roughness = 0.9, faded = false }) { // props
+  const material = useMemo(() => new THREE.MeshStandardMaterial({ roughness }), [roughness]); // matt anyag
+  useEffect(() => {                             // a szín beállítása
     const c = new THREE.Color(color);           // a token színe
-    if (faded) c.lerp(new THREE.Color('#FFFFFF'), 0.1); // térképnél 10%-kal világosabb (design terv 6.1)
+    if (faded) c.lerp(new THREE.Color('#FFFFFF'), 0.1); // térképnél világosabb (design terv 6.1)
     material.color.copy(c);                     // az anyag színe
   }, [material, color, faded]);                 // függőségek
-  useEffect(() => () => material.dispose(), [material]); // az anyag felszabadítása, ha a komponens eltűnik
+  useEffect(() => () => material.dispose(), [material]); // felszabadítás
 
-  const geometries = useMemo(() => {            // a test geometriái (csak ha a testmodell változik)
-    const list = [buildRingGeometry(body.torso, undefined, body.torsoCaps)]; // törzs, alul lekerekítve
-    for (const leg of body.legs) list.push(buildRingGeometry(leg.dense)); // két láb
-    for (const arm of body.arms) list.push(buildRingGeometry(arm.dense, arm.frame, arm.caps)); // két kar a saját ferde keretükben
-    return list;                                // a lista
-  }, [body]);                                   // függőség: a testmodell
-  useEffect(() => () => geometries.forEach((g) => g.dispose()), [geometries]); // a régi geometriák felszabadítása (memória)
+  const geometry = useMemo(() => {              // a geometria egyszer jön létre (a háromszögek állandók)
+    const g = new THREE.BufferGeometry();       // új geometria
+    g.setAttribute('position', new THREE.BufferAttribute(new Float32Array(human.nBody * 3), 3)); // a pontok helye
+    g.setIndex(new THREE.BufferAttribute(human.index, 1)); // háromszögek
+    return g;                                   // kész
+  }, [human.index, human.nBody]);               // csak ha más az alapháló
+  useEffect(() => () => geometry.dispose(), [geometry]); // felszabadítás
 
-  return ( // a test elemei
-    // a test elemei egy csoportba rendezve
-    <group name="avatar">
-      {/* minden geometriához egy háló a közös anyaggal (törzs, 2 láb, 2 kar) */}
-      {geometries.map((g, i) => <mesh key={i} geometry={g} material={material} />)}
-      {/* fej */}
-      <Ellipsoid center={body.head.center} radii={body.head.radii} material={material} />
-      {/* két kéz */}
-      {body.hands.map((h, i) => <Ellipsoid key={`h${i}`} {...h} material={material} />)}
-      {/* két lábfej */}
-      {body.feet.map((f, i) => <Ellipsoid key={`f${i}`} {...f} material={material} />)}
-    </group>
+  useEffect(() => {                             // új testméretek: a pontok frissítése
+    const pos = geometry.getAttribute('position'); // a pontok tömbje
+    pos.array.set(human.positions.subarray(0, human.nBody * 3)); // a test pontjai (az ízületi segédpontok nélkül)
+    pos.needsUpdate = true;                     // jelezzük a videókártyának
+    geometry.computeVertexNormals();            // fényezéshez a felület irányai
+    geometry.computeBoundingSphere();           // befoglaló gömb
+  }, [geometry, human]);                        // függőségek
+
+  return (                                      // a megjelenítendő elem
+    // a test hálója
+    <mesh geometry={geometry} material={material} name="avatar" />
   );                                            // return vége
 }                                               // komponens vége

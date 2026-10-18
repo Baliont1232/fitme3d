@@ -9,8 +9,8 @@ Készítették: Balló Márk, Bari Dániel, Burcsa Bálint.
 
 | Funkció | Hol |
 | --- | --- |
-| Paraméteres 3D avatar a méretekből (nem, magasság, súly, mell, derék, csípő), élő előnézettel | `/avatar` |
-| Ruhák kódból generált 3D modellje: póló, pulóver, nadrág, öv | `frontend/src/three/garments.js` |
+| Valósághű 3D avatar (MakeHuman alapmodell) a méretekből (nem, magasság, súly, mell, derék, csípő), élő előnézettel | `/avatar` |
+| A test felületéből generált 3D ruhák: póló, pulóver, nadrág, öv (egyenes szélekkel, rétegezve) | `frontend/src/three/garments.js` |
 | Méret- és színváltás a próbafülkében, a ruha 200 ms alatt "átúszik" az új méretre | `/termek/:id` |
 | Illeszkedési térkép (zöld / sárga / piros) régiónként, jelmagyarázattal | próbafülke, "Illeszkedési térkép" gomb |
 | Méretajánló indoklással ("Neked az M méret ajánlott – derékban kissé szűk") és "Miért?" részletekkel | próbafülke |
@@ -27,8 +27,10 @@ Demó fiók: **demo@fitme3d.hu / Demo1234** (van testprofilja). Admin: admin@fit
 fitme3d/
 ├── frontend/          React + Three.js (Vite)
 │   └── src/
-│       ├── three/     A 3D MAG: bodyModel.js (test), garments.js (ruhák), loft.js (geometria),
-│       │              Stage3D.jsx (vászon), GarmentMesh.jsx (ruha + animáció), CameraRig.jsx (kamera)
+│       ├── three/     A 3D MAG: humanModel.js (test a méretekből), useHuman.js (betöltés),
+│       │              garments.js (ruhák), AvatarBody.jsx (test), GarmentMesh.jsx (ruha + animáció),
+│       │              Stage3D.jsx (vászon), CameraRig.jsx (kamera)
+│   └── public/avatar/ avatar.bin + avatar.json – a MakeHuman alapháló és morph targetek (a tools/build_avatar.py készíti)
 │       ├── fit/       fitCalc.js – a méretajánló és a térkép KÖZÖS számítása + unit tesztek
 │       ├── pages/     oldalak (kezdőlap, ruhák, termék/próbafülke, avatar, belépés)
 │       ├── components/ újrahasznosítható UI elemek
@@ -42,6 +44,7 @@ fitme3d/
 ├── database/          schema.sql (18 tábla + trigger), seed.sql (6 termék, demó fiókok)
 ├── shared/            fit-config.json – mérettartományok, ráhagyás-küszöbök (a PHP és a React is ezt olvassa)
 ├── docker/            Railway / Docker indítás (Apache beállítás, start.sh)
+├── tools/             build_avatar.py – a MakeHuman fájlokból elkészíti a böngészőnek szóló avatar csomagot
 └── docs/              a tervdokumentumok
 ```
 
@@ -88,10 +91,15 @@ A Railway a gyökérben lévő `Dockerfile`-ból építi az oldalt: lefordítja 
 
 ## Hogyan működik a 3D
 
-- **Avatar:** nincs Blender modell. A test egymás fölé tett keresztmetszetekből (gyűrűkből) épül, ezeket a `loft.js` köti össze háromszögekké. A mell-, derék- és csípőgyűrű kerülete **pontosan** a megadott cm érték. A többi arányt (váll, nyak, végtagok) átlagos emberi arányokból számolja a `bodyModel.js`.
-- **Ruha:** a test gyűrűi kinagyítva. A póló M méretének mellbősége a mérettáblázatban 106 cm, ezért a 3D ruha gyűrűje a mell magasságában pontosan 106 cm kerületű. Ha a ruha kisebb a testnél, rásimul, és a térkép pirossal jelzi, hogy szorít.
+- **Avatar alapmodell:** a [MakeHuman](https://github.com/makehumancommunity/makehuman) nyílt forrású emberi alapmodellje (13 380 pont, valódi anatómia: váll, kulcscsont, ízületek). A fájljai **CC0** licencűek, szabadon felhasználhatók. A `tools/build_avatar.py` egyszer lefuttatva kiszedi belőle, ami kell (háló, ízületek, morph targetek, testrész-címkék), és tömör bináris csomagba írja (`frontend/public/avatar/`). Újragenerálás: `python tools/build_avatar.py <makehuman>/makehuman/data`.
+- **Morph lépések** (`humanModel.js`, egy test kb. 50–100 ms):
+  1. nem + súly: a MakeHuman "macro" targetjei a BMI és a körméretek alapján keverve,
+  2. az arc és a törzs apró részleteinek elsimítása (kirakati bábu hatás),
+  3. magasság: a magasság target, majd pontos arányos nagyítás (centire pontos),
+  4. mell, derék, csípő: a MakeHuman körméret-targetjei Newton-módszerrel beállítva, a maradékot egy lágy, harang alakú tágítás pótolja. A kerületet úgy mérjük, mint a mérőszalag (a keresztmetszet konvex burka), és **pontosan** a megadott cm érték.
+- **Ruha:** a test felületének egy része (testrész-címkék és magasság szerint kivágva), a felülettől kitolva. A kitolás mértéke a mérettáblázatból jön: ha a póló M mellbősége 106 cm, a ruha a mell magasságában 106 cm kerületű. A széleket (póló alja, nyakkivágás, ujjak, nadrágszár) egyenes vonalra vágjuk, a homorú részeket simítás hidalja át, mint a valódi anyag. A rétegek (pl. póló a nadrágon) egymásra kerülnek. Ha a ruha kisebb a testnél, rásimul, és a térkép pirossal jelzi, hogy szorít.
 - **Illeszkedés:** ráhagyás = ruha mérete − test mérete. A küszöbök ruhatípusonként a `shared/fit-config.json`-ban vannak, nem a kódban. A méretajánló és a térkép ugyanazt a függvényt használja (`fitCalc.js`), így soha nem mondanak ellent egymásnak.
-- **Később:** a kódból generált avatar lecserélhető egy Blenderes, morph targetes GLB modellre ugyanazzal a méretleképezéssel. A `product_models` tábla és az API már fogadja a GLB útvonalat (3D megvalósítási terv 3.4 és 4.1).
+- **Később:** a termékekhez saját, Blenderben készült GLB ruhamodell is jöhet. A `product_models` tábla és az API már fogadja a GLB útvonalat (3D megvalósítási terv 3.4 és 4.1).
 
 ## Kódolási szabály a csapatban
 
