@@ -1,0 +1,52 @@
+{
+  "leiras": "Közös konfiguráció: ezt a fájlt a PHP backend ÉS a React frontend is beolvassa. A JSON formátumba nem lehet kommentet írni, ezért minden résznél a 'leiras' mező magyarázza, mire való.",
+
+  "meresek": {
+    "leiras": "A testméretek megengedett tartománya (min–max). Ebből jön a csúszkák határa, az űrlap hibaüzenete és a backend ellenőrzése is. 'alap' = kezdőérték, 'lepes' = a csúszka lépésköze.",
+    "height_cm": { "nev": "Magasság", "targyrag": "magasság", "egyseg": "cm", "min": 140, "max": 210, "lepes": 1, "alap": 178 },
+    "weight_kg": { "nev": "Testsúly", "targyrag": "testsúly", "egyseg": "kg", "min": 40, "max": 150, "lepes": 0.5, "alap": 75 },
+    "chest_cm": { "nev": "Mellbőség", "targyrag": "mellbőség", "egyseg": "cm", "min": 70, "max": 140, "lepes": 0.5, "alap": 98 },
+    "waist_cm": { "nev": "Derékbőség", "targyrag": "derékbőség", "egyseg": "cm", "min": 55, "max": 130, "lepes": 0.5, "alap": 84 },
+    "hip_cm": { "nev": "Csípőbőség", "targyrag": "csípőbőség", "egyseg": "cm", "min": 75, "max": 145, "lepes": 0.5, "alap": 98 }
+  },
+
+  "alapAvatar": {
+    "leiras": "A semleges alapavatar (közepes, M méret) a kezdőlaphoz és a megosztott szettekhez. Soha nem egy valódi felhasználó méretei.",
+    "gender": 1, "height_cm": 178, "weight_kg": 75, "chest_cm": 98, "waist_cm": 84, "hip_cm": 98
+  },
+
+  "regiok": {
+    "leiras": "A mért testrégiók magyar nevei. A 'hol' alakot használjuk a mondatokban: 'derékban kissé bő'.",
+    "chest": { "nev": "Mell", "hol": "mellben" },
+    "waist": { "nev": "Derék", "hol": "derékban" },
+    "hip": { "nev": "Csípő", "hol": "csípőben" }
+  },
+
+  "kategoriak": {
+    "leiras": "Melyik kategóriából milyen 3D ruhatípus épül, és a szettben melyik slotba kerül (0 = felső, 1 = nadrág, 2 = kiegészítő).",
+    "Pólók": { "ruhaTipus": "polo", "slot": 0 },
+    "Felsők": { "ruhaTipus": "pulover", "slot": 0 },
+    "Nadrágok": { "ruhaTipus": "nadrag", "slot": 1 },
+    "Kiegészítők": { "ruhaTipus": "ov", "slot": 2 }
+  },
+
+  "rahagyas": {
+    "leiras": "Ráhagyás-küszöbök ruhatípusonként és régiónként, cm-ben. Ráhagyás = a ruha körmérete - a test körmérete. min..max között JÓ (zöld). min alatt 'szukTures' cm-ig KISSÉ SZŰK (sárga), az alatt SZORÍT (piros). max felett 'boTures' cm-ig KISSÉ BŐ (sárga), afölött BŐ (sárga).",
+    "polo": {
+      "chest": { "min": 6, "max": 16, "szukTures": 5, "boTures": 10 },
+      "waist": { "min": 6, "max": 20, "szukTures": 6, "boTures": 12 }
+    },
+    "pulover": {
+      "chest": { "min": 10, "max": 22, "szukTures": 6, "boTures": 12 },
+      "waist": { "min": 8, "max": 24, "szukTures": 6, "boTures": 12 },
+      "hip": { "min": 4, "max": 20, "szukTures": 5, "boTures": 12 }
+    },
+    "nadrag": {
+      "waist": { "min": -1, "max": 4, "szukTures": 3, "boTures": 5 },
+      "hip": { "min": 3, "max": 12, "szukTures": 4, "boTures": 8 }
+    },
+    "ov": {
+      "waist": { "min": -2, "max": 6, "szukTures": 4, "boTures": 6 }
+    }
+  }
+}

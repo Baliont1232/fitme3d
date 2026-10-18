@@ -1,0 +1,14 @@
+# .gitignore – ezek a fájlok NEM kerülnek a GitHubra
+
+# a letöltött npm csomagok (npm install újra letölti őket)
+node_modules/
+# a lefordított frontend (npm run build újra elkészíti)
+frontend/dist/
+# helyi környezeti változók (jelszavak!)
+.env
+# operációs rendszer szemét fájljai
+.DS_Store
+Thumbs.db
+# szerkesztő beállítások
+.vscode/
+.idea/

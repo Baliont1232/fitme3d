@@ -1,0 +1,94 @@
+/* =====================================================================
+   base.css – alapstílusok: betű, háttér, címek, gombok, mezők
+   Csak tokeneket használunk (tokens.css), közvetlen színkód nincs.
+   ===================================================================== */
+
+*, *::before, *::after { box-sizing: border-box; }   /* a szélesség a keretet és a belső margót is tartalmazza */
+
+html { -webkit-text-size-adjust: 100%; }             /* iPhone-on ne nagyítsa fel magától a szöveget */
+
+body {
+  margin: 0;                                          /* a böngésző alap margójának törlése */
+  font: var(--font-body);                             /* törzsszöveg: Inter 16/24 */
+  color: var(--color-text);                           /* grafit szöveg */
+  background: var(--color-bg);                        /* fehér háttér */
+  -webkit-font-smoothing: antialiased;                /* simább betűk macOS-en */
+}
+
+h1 { font: var(--font-h1); margin: 0 0 var(--space-3); letter-spacing: -0.01em; } /* oldalcím */
+h2 { font: var(--font-h2); margin: 0 0 var(--space-3); }  /* szekciócím */
+h3 { font: var(--font-h3); margin: 0 0 var(--space-2); }  /* kártyacím */
+p { margin: 0 0 var(--space-3); }                     /* bekezdés alatti térköz */
+a { color: inherit; }                                 /* a linkek a szöveg színét veszik át */
+img, svg { display: block; }                          /* képek blokként (nincs alsó rés) */
+
+.container { width: 100%; max-width: var(--content-max); margin: 0 auto; padding: 0 var(--space-3); } /* középre igazított tartalom, mobilon 16 px margó */
+@media (min-width: 1024px) { .container { padding: 0 var(--space-5); } } /* desktopon 32 px margó */
+
+.muted { color: var(--color-text-muted); }            /* másodlagos szöveg */
+.small { font: var(--font-small); }                   /* kis szöveg */
+.center { text-align: center; }                       /* középre igazítás */
+.price { font-variant-numeric: tabular-nums; font-weight: 700; } /* ár: táblázatos számjegyek */
+.price--lg { font: var(--font-price); margin: 0 0 var(--space-4); font-variant-numeric: tabular-nums; } /* nagy ár a termékoldalon */
+
+/* --- Fókusz: minden interaktív elemen látható gyűrű (akadálymentesség) --- */
+:focus-visible { outline: none; box-shadow: var(--focus-ring); border-radius: var(--radius-sm); } /* 2 px grafit gyűrű 2 px eltartással */
+
+/* --- Gombok (Design terv 4.1) --- */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: var(--space-2); /* ikon és szöveg között 8 px */
+  min-height: var(--control-h);                       /* 44 px magas */
+  padding: 0 20px;                                    /* vízszintes belső margó */
+  border-radius: var(--radius-sm);                    /* 10 px lekerekítés */
+  border: 1.5px solid transparent;                    /* keret helye (másodlagosnál látszik) */
+  font: 600 16px/1 var(--font-family);                /* 16/600 betű */
+  text-decoration: none;                              /* linkként se legyen aláhúzva */
+  cursor: pointer;                                    /* kéz kurzor */
+  transition: background var(--dur-fast) var(--ease-out), transform var(--dur-fast) var(--ease-out); /* finom átmenet */
+}
+.btn:active { transform: scale(0.98); }               /* lenyomva 98%-ra kicsinyít */
+.btn:disabled { background: var(--color-border); color: var(--color-text-disabled); border-color: transparent; cursor: not-allowed; transform: none; } /* tiltott állapot */
+.btn--primary { background: var(--color-accent); color: var(--color-text); } /* elsődleges: korall alap, grafit szöveg (kontraszt!) */
+.btn--primary:hover:not(:disabled) { background: var(--color-accent-hover); } /* rámutatáskor sötétebb korall */
+.btn--secondary { background: var(--color-bg); color: var(--color-text); border-color: var(--color-text); } /* másodlagos: fehér, grafit keret */
+.btn--secondary:hover { background: var(--color-surface); } /* rámutatáskor világosszürke */
+.btn--text { background: none; padding: 0 var(--space-1); min-height: auto; color: var(--color-text); font-weight: 600; } /* szöveges gomb */
+.btn--text:hover { text-decoration: underline; }      /* rámutatáskor aláhúzás */
+.btn--sm { min-height: var(--control-h-sm); padding: 0 var(--space-3); font-size: 14px; } /* kis gomb */
+.btn--block { width: 100%; }                          /* teljes szélességű gomb */
+
+.spinner {
+  width: 18px; height: 18px;                          /* 18 px-es pörgő jel */
+  border: 2px solid currentColor; border-right-color: transparent; /* egy negyede átlátszó, így látszik a forgás */
+  border-radius: 50%;                                 /* kör */
+  animation: spin 0.8s linear infinite;               /* folyamatos forgás */
+}
+@keyframes spin { to { transform: rotate(360deg); } } /* egy teljes fordulat */
+
+/* --- Mezők (Design terv 4.2) --- */
+.field { display: block; margin-bottom: var(--space-3); } /* címke + mező + hiba egy blokkban */
+.field__label { display: block; font: var(--font-label); color: var(--color-text); margin: 0 0 var(--space-2); text-transform: none; } /* címke a mező felett */
+.input {
+  width: 100%; height: var(--control-h);              /* 44 px magas, teljes szélesség */
+  padding: 0 var(--space-3);                          /* belső margó */
+  background: var(--color-surface);                   /* világosszürke háttér */
+  border: 1px solid var(--color-border);              /* halvány keret */
+  border-radius: var(--radius-sm);                    /* 10 px lekerekítés */
+  font: var(--font-body); color: var(--color-text);   /* betű */
+}
+.input:focus { outline: none; background: var(--color-bg); border: 2px solid var(--color-text); padding: 0 15px; box-shadow: none; } /* fókuszban fehér háttér, 2 px grafit keret */
+.input[aria-invalid='true'] { border: 1.5px solid var(--color-danger); background: var(--color-danger-50); } /* hibás mező */
+.field__error { display: flex; align-items: center; gap: var(--space-2); margin: var(--space-2) 0 0; font: var(--font-small); color: var(--color-danger); } /* hibaüzenet pirossal a mező alatt */
+.field__error-icon { display: inline-grid; place-items: center; width: 16px; height: 16px; border-radius: 50%; background: var(--color-danger); color: var(--color-bg); font: 700 11px/1 var(--font-family); flex: none; } /* kör alakú "!" ikon */
+.input-wrap { position: relative; display: block; }   /* a jelszómező és a szem ikon tárolója */
+.input-wrap__btn { position: absolute; right: 4px; top: 50%; transform: translateY(-50%); width: 36px; height: 36px; border: 0; background: none; cursor: pointer; display: grid; place-items: center; color: var(--color-text-muted); } /* szem ikon a mező jobb szélén */
+
+.error-box { padding: var(--space-3); border-radius: var(--radius-sm); background: var(--color-danger-50); color: var(--color-text); border: 1px solid var(--color-danger); } /* általános hibadoboz */
+
+/* --- Képernyőolvasónak szóló, láthatatlan szöveg --- */
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; } /* nem látszik, de felolvasható */
+
+/* --- Csökkentett mozgás: minden animáció kikapcsolva --- */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; } /* nincs mozgás */
+}

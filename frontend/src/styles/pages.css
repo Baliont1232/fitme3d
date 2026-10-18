@@ -1,0 +1,57 @@
+/* =====================================================================
+   pages.css – az oldalak elrendezése (UI terv 7. és 9. fejezet)
+   Mobil először: az alapstílus a telefonra szól, a @media részek a
+   nagyobb képernyőkre rendezik át.
+   ===================================================================== */
+
+main { min-height: calc(100vh - 56px); }              /* a tartalom kitölti a képernyőt, hogy a lábléc lent legyen */
+.page { padding-top: var(--space-4); }                /* minden oldal teteje */
+.section { margin-top: var(--space-6); }              /* szekciók közötti nagy térköz */
+
+/* --- Kezdőlap --- */
+.hero { display: grid; gap: var(--space-4); align-items: center; } /* mobilon egymás alatt */
+.hero__lead { font: 400 18px/28px var(--font-family); color: var(--color-text-muted); max-width: 32em; } /* bevezető mondat */
+.hero__actions { display: flex; flex-wrap: wrap; gap: var(--space-3); } /* két gomb */
+.hero__stage { height: 360px; }                       /* mobilon a forgó avatar magassága */
+@media (min-width: 1024px) {                          /* desktop */
+  .hero { grid-template-columns: 1fr 1fr; gap: var(--space-6); padding-top: var(--space-5); } /* két oszlop */
+  .hero h1 { font: 700 44px/52px var(--font-family); letter-spacing: -0.02em; } /* nagyobb cím a hero-ban */
+  .hero__stage { height: 560px; }                     /* nagyobb vászon */
+}
+.steps { display: grid; gap: var(--space-4); padding: 0; margin: 0; list-style: none; counter-reset: step; } /* három lépés */
+@media (min-width: 640px) { .steps { grid-template-columns: repeat(3, 1fr); } } /* tableten és felette egy sorban */
+.steps__icon { display: grid; place-items: center; width: 48px; height: 48px; border-radius: 50%; background: var(--color-surface); margin-bottom: var(--space-3); } /* ikon körben */
+.tiles { display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--space-3); } /* kategória csempék 2×2 */
+@media (min-width: 1024px) { .tiles { grid-template-columns: repeat(4, 1fr); gap: var(--space-4); } } /* desktopon egy sorban */
+.tile { display: flex; flex-direction: column; padding: var(--space-3); border-radius: var(--radius-md); background: var(--color-surface); text-decoration: none; aspect-ratio: 1 / 1; transition: box-shadow var(--dur-fast) var(--ease-out); } /* csempe */
+.tile:hover { box-shadow: var(--shadow-float); }     /* rámutatáskor kiemelkedik */
+.tile .illustration { flex: 1; min-height: 0; width: 100%; margin-top: auto; } /* a rajz a csempe alsó részében */
+
+/* --- Termékoldal / próbafülke --- */
+.tryon { display: grid; gap: var(--space-4); padding: var(--space-3) var(--space-3) 0; max-width: var(--content-max); margin: 0 auto; } /* mobilon egymás alatt */
+.tryon__stage { height: 55vh; min-height: 380px; }    /* mobilon a vászon a képernyő kb. 55%-a */
+.tryon__title { margin-bottom: var(--space-1); }      /* terméknév */
+@media (min-width: 1024px) {                          /* desktop: 60% vászon, 40% panel */
+  .tryon { grid-template-columns: 3fr 2fr; gap: var(--space-5); padding: var(--space-4) var(--space-5) 0; align-items: start; } /* két oszlop */
+  .tryon__stage { position: sticky; top: calc(var(--header-h) + var(--space-3)); height: calc(100vh - var(--header-h) - var(--space-5)); } /* a vászon a helyén marad görgetéskor */
+}
+
+/* --- Avatar készítő --- */
+.avatar-page { display: grid; gap: var(--space-4); padding: var(--space-3) var(--space-3) 0; max-width: var(--content-max); margin: 0 auto; } /* mobilon egymás alatt */
+.avatar-page__stage { order: -1; position: sticky; top: 56px; z-index: 1; height: 40vh; min-height: 280px; background: var(--color-bg); } /* mobilon felül, ragadósan, a képernyő kb. 40%-án */
+@media (min-width: 1024px) {                          /* desktop: 40% űrlap, 60% előnézet */
+  .avatar-page { grid-template-columns: 2fr 3fr; gap: var(--space-5); padding: var(--space-4) var(--space-5) 0; align-items: start; } /* két oszlop */
+  .avatar-page__stage { order: 0; top: calc(var(--header-h) + var(--space-3)); height: calc(100vh - var(--header-h) - var(--space-5)); } /* jobb oldalt, ragadósan */
+}
+
+/* --- Belépés --- */
+.auth { min-height: calc(100vh - 56px); display: grid; place-items: start center; background: var(--color-surface); padding: var(--space-4) var(--space-3) var(--space-7); } /* szürke háttér, középen a kártya */
+.auth__card { width: 100%; max-width: 440px; background: var(--color-bg); border-radius: var(--radius-md); box-shadow: var(--shadow-float); padding: var(--space-5) var(--space-4); } /* 440 px széles kártya */
+.auth__logo { display: flex; justify-content: center; margin-bottom: var(--space-4); } /* logó középen */
+.strength { display: flex; align-items: center; gap: var(--space-1); margin: calc(-1 * var(--space-2)) 0 var(--space-3); } /* jelszóerősség sáv */
+.strength span { flex: 1; height: 4px; border-radius: 2px; background: var(--color-border); } /* egy szakasz */
+.strength em { font: var(--font-label); font-style: normal; color: var(--color-text-muted); margin-left: var(--space-2); width: 56px; } /* felirat */
+.strength--0 span:nth-child(1) { background: var(--color-danger); } /* gyenge: 1 piros szakasz */
+.strength--1 span:nth-child(-n+2) { background: var(--color-warning); } /* közepes: 2 sárga */
+.strength--2 span { background: var(--color-success); } /* erős: 3 zöld */
+.demo-hint { margin: var(--space-4) 0 var(--space-2); padding: var(--space-2) var(--space-3); border-radius: var(--radius-sm); background: var(--color-accent-50); color: var(--color-accent-700); font: var(--font-small); text-align: center; } /* demó fiók adatai */

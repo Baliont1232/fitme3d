@@ -1,0 +1,16 @@
+# =====================================================================
+# .htaccess – XAMPP / Apache alatt minden /api/... kérést az index.php-ra irányít
+# =====================================================================
+
+RewriteEngine On
+# bekapcsoljuk az Apache URL-átíró modulját
+
+RewriteCond %{HTTP:Authorization} .
+# ha a kérésben van Authorization fejléc (a belépési token)...
+RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
+# ...akkor továbbadjuk a PHP-nak (Apache alatt különben elveszne)
+
+RewriteCond %{REQUEST_FILENAME} !-f
+# ha a kért útvonal nem egy létező fájl...
+RewriteRule ^ index.php [QSA,L]
+# ...akkor az index.php kapja meg (QSA = a ?... paraméterek megmaradnak, L = utolsó szabály)

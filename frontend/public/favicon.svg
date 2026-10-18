@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!-- FitMe3D jel: korall, lekerekített négyzet (22% sarokkerekítés) -->
+  <rect width="64" height="64" rx="14" fill="#FF7A59"/>
+  <!-- fehér vállfa egy vonalból; az akasztó 3/4-es körívben folytatódik (360°-os forgatás) -->
+  <g fill="none" stroke="#FFFFFF" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round">
+    <!-- az akasztó íve -->
+    <path d="M32 24 a5.5 5.5 0 1 1 5.5 -5.5"/>
+    <!-- a vállfa teste -->
+    <path d="M32 24 L13 41 Q11.5 43.5 14.5 44 L49.5 44 Q52.5 43.5 51 41 Z"/>
+  </g>
+</svg>

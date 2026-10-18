@@ -1,0 +1,30 @@
+<!doctype html>
+<!-- index.html – az egyoldalas alkalmazás (SPA) egyetlen HTML oldala; a tartalmat a React tölti be -->
+<html lang="hu"><!-- a nyelv magyar (képernyőolvasóknak is) -->
+  <head>
+    <!-- karakterkódolás: UTF-8, hogy az ékezetek jók legyenek -->
+    <meta charset="UTF-8" />
+    <!-- mobilon a képernyő szélességéhez igazodik -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <!-- a böngészőfül ikonja: a FitMe3D jel -->
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <!-- mobil böngésző sávjának színe -->
+    <meta name="theme-color" content="#FFFFFF" />
+    <!-- leírás a keresőknek -->
+    <meta name="description" content="FitMe3D – próbáld fel a ruhát a saját 3D avatarodon, mielőtt megveszed." />
+    <!-- az Inter betűtípus gyorsabb betöltése -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <!-- a betűfájlok szervere -->
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <!-- Inter betűtípus latin-ext készlettel (ő, ű) -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap&subset=latin-ext" rel="stylesheet" />
+    <!-- az oldal címe a böngészőfülön -->
+    <title>FitMe3D – Virtuális próbafülke</title>
+  </head>
+  <body>
+    <!-- ide tölti be a React az alkalmazást -->
+    <div id="root"></div>
+    <!-- az alkalmazás belépési pontja -->
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>

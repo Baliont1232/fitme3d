@@ -1,0 +1,10 @@
+# .dockerignore – ezeket a Docker build nem másolja be (gyorsabb, kisebb kép)
+
+# a helyi npm csomagok (a build újra telepíti őket)
+frontend/node_modules
+# a helyi build eredménye
+frontend/dist
+# a git előzmények
+.git
+# a tervdokumentumok (a szerveren nem kellenek)
+docs
