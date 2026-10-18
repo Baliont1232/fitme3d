@@ -82,7 +82,9 @@ Az adatbázis kapcsolat alapból a XAMPP beállításait használja (`root`, ür
 
 ## Online (Railway)
 
-A Railway a gyökérben lévő `Dockerfile`-ból építi az oldalt: lefordítja a React frontendet, és egy PHP + Apache szerverre teszi az API-val együtt. Induláskor a `setup.php` feltölti az üres adatbázist. A Railway projektben két szolgáltatás van: az oldal és egy MySQL adatbázis. Minden push a beállított ágra automatikusan frissíti az oldalt.
+A Railway a gyökérben lévő `Dockerfile`-ból építi az oldalt: lefordítja a React frontendet, és egy PHP + Apache szerverre teszi az API-val együtt. Induláskor a `setup.php` feltölti az üres adatbázist. A Railway projektben két szolgáltatás van: az oldal és egy MySQL adatbázis. Az oldal a **`main` ágról** frissül: minden push a `main`-re pár perc alatt automatikusan megjelenik az élő oldalon.
+
+Élő oldal: <https://web-production-41258.up.railway.app>
 
 ## Hogyan működik a 3D
 
@@ -98,4 +100,4 @@ Két kivétel van: a JSON fájlokba (pl. `package.json`, `fit-config.json`) nem 
 
 ## Git munkafolyamat
 
-`main` = stabil, `dev` = közös fejlesztői ág, a feladatok `feature/...` ágakon készülnek, és pull requesttel, kölcsönös code review után kerülnek a `dev`-be.
+Minden a `main` ágon van, és az élő oldal is ebből frissül. Nagyobb feladatokhoz érdemes `feature/...` ágat nyitni, és pull requesttel, kölcsönös code review után a `main`-be fésülni.
